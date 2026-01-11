@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Letter in an Envelope</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(135deg, #f9d1d1 0%, #f5a9a9 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            color: #d04a70;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            font-style: italic;
+            color: #777;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        /* Envelope Styles */
+        .envelope-container {
+            position: relative;
+            width: 400px;
+            height: 300px;
+            margin-bottom: 30px;
+            perspective: 1000px;
+            cursor: pointer;
+            transition: transform 0.5s ease;
+        }
+        
+        .envelope-container:hover {
+            transform: translateY(-10px);
+        }
+        
+        .envelope {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        
+        .envelope.open {
+            transform: translateY(-100px) rotateX(180deg);
+        }
+        
+        .envelope-front, .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .envelope-front {
+            background: #e75480;
+            transform: rotateX(0deg);
+            z-index: 2;
+        }
+        
+        .envelope-back {
+            background: #ff6b95;
+            transform: rotateX(180deg);
+        }
+        
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 200px solid transparent;
+            border-right: 200px solid transparent;
+            border-top: 150px solid #d04a70;
+            border-bottom: 0;
+            transform-origin: top;
+            transition: transform 0.5s ease 0.4s;
+            z-index: 3;
+        }
+        
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+        }
+        
+        .envelope-body {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: #ff8fab;
+            border-radius: 0 0 5px 5px;
+            z-index: 1;
+        }
+        
+        .envelope-heart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            color: white;
+            opacity: 0.8;
+            z-index: 4;
+        }
+        
+        .envelope-text {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: white;
+            z-index: 4;
+        }
+        
+        .letter-inside {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 90%;
+            height: 85%;
+            background: #fffef0;
+            transform: translate(-50%, -50%) translateY(20px);
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.5s ease 0.3s;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .envelope.open .letter-inside {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(0);
+        }
+        
+        .letter-preview {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.4rem;
+            color: #555;
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+        
+        .letter-preview:first-letter {
+            font-size: 2rem;
+            color: #d04a70;
+        }
+        
+        .open-instruction {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-style: italic;
+            color: #777;
+            opacity: 0.8;
+        }
+        
+        /* Letter Styles */
+        .letter-container {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            display: none;
+        }
+        
+        .letter {
+            background-color: #fffef0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23f0e6d3' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 60px 50px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e8dfc8;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .letter.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .letter::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(to right, #e75480, #ff6b95, #e75480);
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .letter-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .letter-header h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: #d04a70;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .letter-header p {
+            font-style: italic;
+            color: #777;
+            font-size: 1.1rem;
+        }
+        
+        .letter-content {
+            line-height: 1.8;
+            font-size: 1.2rem;
+            color: #444;
+            text-align: justify;
+        }
+        
+        .letter-content p {
+            margin-bottom: 25px;
+            text-indent: 40px;
+        }
+        
+        .signature {
+            text-align: right;
+            margin-top: 40px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: #d04a70;
+        }
+        
+        .hearts-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            color: rgba(255, 107, 149, 0.4);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        
+        .stamp {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 70px;
+            height: 70px;
+            background: #f0e6d3;
+            border: 2px dashed #d04a70;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.2rem;
+            color: #d04a70;
+            transform: rotate(15deg);
+        }
+        
+        .date {
+            position: absolute;
+            bottom: 25px;
+            left: 40px;
+            font-style: italic;
+            color: #777;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: #ff6b95;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-btn:hover {
+            background: #e75480;
+            transform: translateY(-3px);
+        }
+        
+        .close-letter-btn {
+            background: #6c757d;
+        }
+        
+        .close-letter-btn:hover {
+            background: #5a6268;
+        }
+        
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b95;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .music-control:hover {
+            background: #e75480;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background-color: #ff6b95;
+            top: -10px;
+            opacity: 0;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .envelope-container {
+                width: 350px;
+                height: 260px;
+            }
+            
+            .envelope-flap {
+                border-left: 175px solid transparent;
+                border-right: 175px solid transparent;
+                border-top: 130px solid #d04a70;
+            }
+            
+            h1 {
+                font-size: 2.8rem;
+            }
+            
+            .letter {
+                padding: 40px 25px;
+            }
+            
+            .letter-header h2 {
+                font-size: 2.5rem;
+            }
+            
+            .letter-content {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .envelope-container {
+                width: 300px;
+                height: 225px;
+            }
+            
+            .envelope-flap {
+                border-left: 150px solid transparent;
+                border-right: 150px solid transparent;
+                border-top: 112px solid #d04a70;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-btn {
+                width: 80%;
+                justify-content: center;
+            }
+            
+            .stamp {
+                width: 60px;
+                height: 60px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="music-control" id="musicControl">
+        <i class="fas fa-music"></i>
+    </button>
+    
+    <div class="container">
+        <h1>My Love Letter</h1>
+        <p class="subtitle">Click the envelope to open and read the letter</p>
+        
+        <div class="envelope-container" id="envelopeContainer">
+            <div class="envelope" id="envelope">
+                <div class="envelope-flap"></div>
+                <div class="envelope-front"></div>
+                <div class="envelope-body"></div>
+                <div class="envelope-back"></div>
+                <div class="envelope-heart">❤</div>
+                <div class="envelope-text">To My Love</div>
+                
+                <div class="letter-inside">
+                    <div class="letter-preview">
+                        My Dearest,<br>
+                        I have something special to tell you...
+                    </div>
+                </div>
+            </div>
+            <p class="open-instruction">Click to open the envelope</p>
+        </div>
+        
+        <div class="letter-container" id="letterContainer">
+            <div class="letter" id="letter">
+                <div class="hearts-container" id="heartsContainer"></div>
+                
+                <div class="stamp">
+                    LOVE
+                </div>
+                
+                <div class="letter-header">
+                    <h2>My Dearest, <u>Yleraine Louisette Intellectus</u></h2>
+                    <p>A letter from the heart</p>
+                </div>
+                
+                <div class="letter-content">
+                    <p>My dearest,</p>
+                    
+                    <p>Before I met you, I was convinced that my heart was nothing but a stagnant pool. The burial place of a fallen moon; a withered windless grove where the waters rested forever unrippled. It was you who helped me see that my heart hadn't entirely withered away. That it could still beat to the rhythm of love.</p>
+               
+                </div>
+                
+                <div class="signature">Forever Yours, Zero</div>
+                
+                <div class="date">January 11, 2026</div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" id="sealBtn">
+                    <i class="fas fa-stamp"></i> Seal with a Kiss
+                </button>
+                <button class="control-btn" id="readBtn">
+                    <i class="fas fa-book-open"></i> Read Aloud
+                </button>
+                <button class="control-btn" id="printBtn">
+                    <i class="fas fa-print"></i> Print Letter
+                </button>
+                <button class="control-btn close-letter-btn" id="closeBtn">
+                    <i class="fas fa-envelope"></i> Back to Envelope
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="bgMusic" loop>
+        <source src="Aya - Earl Agustin (Official Lyric Video).mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="openSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-page-turn-swipe-1432.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        // DOM Elements
+        const envelopeContainer = document.getElementById('envelopeContainer');
+        const envelope = document.getElementById('envelope');
+        const letterContainer = document.getElementById('letterContainer');
+        const letter = document.getElementById('letter');
+        const heartsContainer = document.getElementById('heartsContainer');
+        const musicControl = document.getElementById('musicControl');
+        const bgMusic = document.getElementById('bgMusic');
+        const openSound = document.getElementById('openSound');
+        
+        // State variables
+        let isEnvelopeOpen = false;
+        let isPlaying = false;
+        let heartClickCount = 0;
+        
+        // Create floating hearts
+        function createFloatingHearts() {
+            const heartColors = ['#ff6b95', '#e75480', '#ff8fab', '#ffacc7'];
+            
+            for (let i = 0; i < 25; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = '❤';
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.top = `${Math.random() * 100}%`;
+                heart.style.fontSize = `${Math.random() * 15 + 15}px`;
+                heart.style.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+                heart.style.opacity = `${Math.random() * 0.5 + 0.2}`;
+                heart.style.animationDelay = `${Math.random() * 5}s`;
+                heart.style.animationDuration = `${Math.random() * 4 + 4}s`;
+                heartsContainer.appendChild(heart);
+            }
+        }
+        
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#ff6b95', '#e75480', '#ff8fab', '#ffacc7', '#ffc8dd'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                
+                document.body.appendChild(confetti);
+                
+                // Animate confetti
+                const animation = confetti.animate([
+                    { top: '-10px', opacity: 1, transform: 'rotate(0deg)' },
+                    { top: `${Math.random() * 100 + 50}vh`, opacity: 0.7, transform: `rotate(${Math.random() * 360}deg)` },
+                    { top: '100vh', opacity: 0, transform: `rotate(${Math.random() * 720}deg)` }
+                ], {
+                    duration: Math.random() * 3000 + 2000,
+                    easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)'
+                });
+                
+                // Remove confetti after animation
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+        
+        // Open envelope function
+        function openEnvelope() {
+            if (isEnvelopeOpen) return;
+            
+            isEnvelopeOpen = true;
+            envelope.classList.add('open');
+            openSound.play();
+            
+            // Create confetti effect
+            createConfetti();
+            
+            // Show the letter after a delay
+            setTimeout(() => {
+                letterContainer.style.display = 'block';
+                setTimeout(() => {
+                    letter.classList.add('show');
+                }, 50);
+            }, 800);
+            
+            // Change instruction text
+            document.querySelector('.open-instruction').textContent = 'Letter opened!';
+        }
+        
+        // Close envelope function
+        function closeEnvelope() {
+            isEnvelopeOpen = false;
+            envelope.classList.remove('open');
+            letter.classList.remove('show');
+            
+            setTimeout(() => {
+                letterContainer.style.display = 'none';
+            }, 800);
+            
+            // Reset instruction text
+            document.querySelector('.open-instruction').textContent = 'Click to open the envelope';
+        }
+        
+        // Music control
+        musicControl.addEventListener('click', function() {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicControl.innerHTML = '<i class="fas fa-music"></i>';
+            } else {
+                bgMusic.play().catch(e => {
+                    alert("Please click the music button again to play background music. Some browsers require user interaction first.");
+                });
+                musicControl.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+            isPlaying = !isPlaying;
+        });
+        
+        // Seal with a kiss button
+        document.getElementById('sealBtn').addEventListener('click', function() {
+            // Create kiss animation
+            const kiss = document.createElement('div');
+            kiss.innerHTML = '💋';
+            kiss.style.position = 'fixed';
+            kiss.style.fontSize = '50px';
+            kiss.style.left = '50%';
+            kiss.style.top = '50%';
+            kiss.style.transform = 'translate(-50%, -50%) scale(0)';
+            kiss.style.zIndex = '1000';
+            kiss.style.opacity = '1';
+            
+            document.body.appendChild(kiss);
+            
+            // Animate the kiss
+            const animation = kiss.animate([
+                { transform: 'translate(-50%, -50%) scale(0)', opacity: 1 },
+                { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 0.8 },
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.5 }
+            ], {
+                duration: 1000,
+                easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)'
+            });
+            
+            // Change button text temporarily
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-kiss-wink-heart"></i> Letter Sealed!';
+            this.style.background = '#4CAF50';
+            
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.style.background = '';
+            }, 2000);
+            
+            // Remove kiss after animation
+            animation.onfinish = () => kiss.remove();
+        });
+        
+        // Read aloud button
+        document.getElementById('readBtn').addEventListener('click', function() {
+            const letterText = document.querySelector('.letter-content').innerText;
+            const signature = document.querySelector('.signature').innerText;
+            const fullText = letterText + "\n\n" + signature;
+            
+            // Change button text
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-volume-up"></i> Reading...';
+            
+            // Use the Web Speech API if available
+            if ('speechSynthesis' in window) {
+                const speech = new SpeechSynthesisUtterance();
+                speech.text = fullText;
+                speech.rate = 0.9;
+                speech.pitch = 1.2;
+                speech.volume = 1;
+                
+                // Reset button when done
+                speech.onend = function() {
+                    document.getElementById('readBtn').innerHTML = originalText;
+                };
+                
+                // Handle errors
+                speech.onerror = function() {
+                    document.getElementById('readBtn').innerHTML = originalText;
+                };
+                
+                window.speechSynthesis.speak(speech);
+            } else {
+                alert("Your browser doesn't support text-to-speech. Here's the text:\n\n" + fullText.substring(0, 500) + "...");
+                this.innerHTML = originalText;
+            }
+        });
+        
+        // Print button
+        document.getElementById('printBtn').addEventListener('click', function() {
+            // Create a print-friendly version
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Love Letter</title>');
+            printWindow.document.write('<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: "Playfair Display", serif; padding: 40px; color: #333; line-height: 1.6; }');
+            printWindow.document.write('h1 { font-family: "Dancing Script", cursive; color: #d04a70; text-align: center; }');
+            printWindow.document.write('.signature { font-family: "Dancing Script", cursive; font-size: 2rem; text-align: right; margin-top: 40px; color: #d04a70; }');
+            printWindow.document.write('.date { font-style: italic; color: #777; margin-top: 20px; }');
+            printWindow.document.write('@media print { body { padding: 0; } }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            
+            // Get the letter content
+            const title = document.querySelector('.letter-header h2').innerText;
+            const subtitle = document.querySelector('.letter-header p').innerText;
+            const content = document.querySelector('.letter-content').innerHTML;
+            const signature = document.querySelector('.signature').innerHTML;
+            const date = document.querySelector('.date').innerHTML;
+            
+            printWindow.document.write(`<h1>${title}</h1>`);
+            printWindow.document.write(`<p style="text-align: center; font-style: italic; margin-bottom: 30px;">${subtitle}</p>`);
+            printWindow.document.write(content);
+            printWindow.document.write(`<div class="signature">${signature}</div>`);
+            printWindow.document.write(`<div class="date">${date}</div>`);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            
+            // Trigger print after a short delay
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        });
+        
+        // Close button
+        document.getElementById('closeBtn').addEventListener('click', closeEnvelope);
+        
+        // Envelope click event
+        envelopeContainer.addEventListener('click', openEnvelope);
+        
+        // Initialize floating hearts
+        createFloatingHearts();
+        
+        // Add subtle envelope hover effect
+        envelopeContainer.addEventListener('mouseenter', function() {
+            if (!isEnvelopeOpen) {
+                this.style.transform = 'translateY(-10px)';
+            }
+        });
+        
+        envelopeContainer.addEventListener('mouseleave', function() {
+            if (!isEnvelopeOpen) {
+                this.style.transform = 'translateY(0)';
+            }
+        });
+        
+        // Add keyboard support for accessibility
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' || event.code === 'Enter') {
+                if (!isEnvelopeOpen && document.activeElement === envelopeContainer) {
+                    openEnvelope();
+                }
+            }
+            
+            if (event.code === 'Escape' && isEnvelopeOpen) {
+                closeEnvelope();
+            }
+        });
+        
+        // Make envelope focusable for accessibility
+        envelopeContainer.setAttribute('tabindex', '0');
+        
+        // Add aria labels for accessibility
+        envelopeContainer.setAttribute('aria-label', 'Love letter envelope. Click to open.');
+        musicControl.setAttribute('aria-label', 'Toggle background music');
+    </script>
+</body>
+</html>
